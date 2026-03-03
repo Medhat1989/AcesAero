@@ -43,19 +43,36 @@ export default function TalentForm() {
     });
 
     try {
+      console.log("Submitting form data:", formData);
+      console.log("Files to upload:", Object.keys(files).filter(k => files[k]));
+
       const response = await fetch('/api/apply', {
         method: 'POST',
         body: data,
       });
 
+      console.log("Server response status:", response.status);
+      
+      let result;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        result = await response.json();
+      } else {
+        const text = await response.text();
+        console.error("Server returned non-JSON response:", text);
+        result = { message: `Server error (${response.status}): ${text.slice(0, 100)}` };
+      }
+      
+      console.log("Server response body:", result);
+
       if (response.ok) {
         setIsSubmitted(true);
       } else {
-        alert('Something went wrong. Please try again.');
+        alert(result.message || 'Something went wrong. Please try again.');
       }
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert('Network error. Please try again.');
+      alert('Network error. Please check your connection and try again.');
     } finally {
       setIsSubmitting(false);
     }
