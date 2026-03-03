@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --color-aviation-blue: #0A192F;
+  --color-aviation-gold: #9333ea;
+}
+
+@layer base {
+  body {
+    @apply bg-[#030014] text-white font-sans antialiased;
+  }
+}
+
+.glass {
+  @apply bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] shadow-[0_8px_32px_0_rgba(0,0,0,0.37)];
+}
+
+.glass-button {
+  @apply bg-purple-600/20 backdrop-blur-xl border border-purple-500/30 hover:bg-purple-600/40 transition-all duration-300 shadow-lg shadow-purple-500/10;
+}
+
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-white to-white/50;
+}
