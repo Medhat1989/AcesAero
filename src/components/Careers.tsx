@@ -12,12 +12,13 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const JobCard = ({ title, location, type, description, requirements }: { 
+const JobCard = ({ title, location, type, description, requirements, benefits }: { 
   title: string, 
   location: string, 
   type: string, 
   description: string,
-  requirements: string[]
+  requirements: string[],
+  benefits?: { label: string, value: string }[]
 }) => (
   <motion.div 
     initial={{ opacity: 0, y: 20 }}
@@ -71,6 +72,20 @@ const JobCard = ({ title, location, type, description, requirements }: {
         </ul>
       </div>
     </div>
+
+    {benefits && (
+      <div className="mt-12 pt-12 border-t border-white/10">
+        <h4 className="text-base md:text-lg font-display font-bold mb-6 text-white">Benefits & Package</h4>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {benefits.map((benefit, i) => (
+            <div key={i} className="p-4 rounded-xl bg-white/5 border border-white/5 hover:border-aviation-gold/20 transition-colors">
+              <p className="text-aviation-gold font-bold text-[10px] md:text-xs uppercase tracking-widest mb-2">{benefit.label}</p>
+              <p className="text-white/70 text-xs md:text-sm leading-relaxed">{benefit.value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
   </motion.div>
 );
 
@@ -127,6 +142,13 @@ export default function Careers() {
                 "No visible tattoos while in uniform",
                 "Excellent health and fitness level",
                 "Strong interpersonal and communication skills"
+              ]}
+              benefits={[
+                { label: "Strategic Base Locations", value: "Fully provided accommodation in both Jeddah and Riyadh." },
+                { label: "Structured Work-Life Balance", value: "Enjoy a fixed roster featuring a \"6 weeks on / 2 weeks off\" rotation." },
+                { label: "Reliable Logistics", value: "Comprehensive ground transportation provided." },
+                { label: "Competitive Tax-Free", value: "Monthly salary package of $1,700 USD." },
+                { label: "Professional Commitment", value: "Secure 12-month initial contract." }
               ]}
             />
 
