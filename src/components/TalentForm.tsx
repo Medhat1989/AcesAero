@@ -46,7 +46,10 @@ export default function TalentForm() {
       console.log("Submitting form data:", formData);
       console.log("Files to upload:", Object.keys(files).filter(k => files[k]));
 
-      const response = await fetch('/api/apply', {
+      const apiUrl = '/api/apply';
+      console.log(`Fetching: ${apiUrl} from origin: ${window.location.origin}`);
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         body: data,
       });

@@ -1,5 +1,4 @@
 import express from "express";
-import { createServer as createViteServer } from "vite";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -26,14 +25,24 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+const app = express();
+
 async function startServer() {
-  const app = express();
   const PORT = 3000;
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
+  // Health check
+  app.get("/api/health", (req, res) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  });
+
   // API Route for Talent Application
+  app.get("/api/apply", (req, res) => {
+    res.json({ message: "Talent API is active. Use POST to submit applications." });
+  });
+
   app.post("/api/apply", upload.fields([
     { name: "cv", maxCount: 1 },
     { name: "license", maxCount: 1 },
@@ -46,17 +55,14 @@ async function startServer() {
       console.log("New Talent Application Received:", { name, surname, nationality, dob, crewType });
       
       if (!files || !files.cv || !files.license) {
-        console.error("Validation Error: Missing required files");
         return res.status(400).json({ 
           success: false, 
           message: "Missing required files (CV and License are mandatory)." 
         });
       }
 
-      console.log("Files received successfully:", Object.keys(files));
-
       // Email Logic
-      const adminEmail = "flgroundops@gmail.com";
+      const adminEmail = "ryanmed.khalil@gmail.com";
       const mailOptions = {
         from: process.env.SMTP_USER || "recruitment@acesads.aero",
         to: adminEmail,
@@ -87,34 +93,61 @@ async function startServer() {
         ],
       };
 
-      // Only attempt to send if SMTP is configured
       if (process.env.SMTP_USER && process.env.SMTP_PASS) {
         await transporter.sendMail(mailOptions);
         console.log("Email sent successfully to:", adminEmail);
-      } else {
-        console.log("SMTP not configured. Skipping email send. Application details logged to console.");
       }
 
       res.status(200).json({ 
         success: true, 
-        message: "Application submitted successfully! Our HR team will review it and contact you soon." 
+        message: "Application submitted successfully!" 
       });
     } catch (error) {
-      console.error("Server Error during application submission:", error);
-      res.status(500).json({ success: false, message: "Internal server error. Please try again later." });
+      console.error("Server Error:", error);
+      res.status(500).json({ success: false, message: "Internal server error." });
     }
   });
 
   // API Route for Airline Partnership
-  app.post("/api/partner", (req, res) => {
-    const { companyName, contactName, email, phone, operationType, fleetSize, message, services } = req.body;
+  app.post("/api/partner", async (req, res) => {
+    try {
+      const { companyName, contactName, email, phone, operationType, fleetSize, message, services } = req.body;
+      console.log("New Airline Partnership Request:", { companyName, contactName, email, phone });
 
-    console.log("New Airline Partnership Request Received:", { companyName, contactName, email, phone });
+      const adminEmail = "ryanmed.khalil@gmail.com";
+      const mailOptions = {
+        from: process.env.SMTP_USER || "recruitment@acesads.aero",
+        to: adminEmail,
+        subject: `New Partnership Request: ${companyName}`,
+        text: `
+          New Partnership Request Details:
+          -----------------------------
+          Company: ${companyName}
+          Contact: ${contactName}
+          Email: ${email}
+          Phone: ${phone}
+          Operation Type: ${operationType}
+          Fleet Size: ${fleetSize}
+          Services Requested: ${services ? services.join(', ') : 'None specified'}
+          
+          Message:
+          ${message}
+        `,
+      };
 
-    res.status(200).json({ 
-      success: true, 
-      message: "Partnership request received!" 
-    });
+      if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+        await transporter.sendMail(mailOptions);
+        console.log("Partnership email sent successfully to:", adminEmail);
+      }
+
+      res.status(200).json({ 
+        success: true, 
+        message: "Partnership request received! Our team will contact you shortly." 
+      });
+    } catch (error) {
+      console.error("Partnership Server Error:", error);
+      res.status(500).json({ success: false, message: "Internal server error." });
+    }
   });
 
   // Global Error Handler
@@ -129,21 +162,42 @@ async function startServer() {
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
     });
     app.use(vite.middlewares);
   } else {
-    app.use(express.static("dist"));
-    app.get("*", (req, res) => {
-      res.sendFile(path.resolve("dist/index.html"));
-    });
+    const distPath = path.resolve("dist");
+    if (fs.existsSync(distPath)) {
+      console.log(`Serving static files from: ${distPath}`);
+      app.use(express.static(distPath));
+      app.get("*", (req, res) => {
+        const indexPath = path.join(distPath, "index.html");
+        if (fs.existsSync(indexPath)) {
+          res.sendFile(indexPath);
+        } else {
+          console.error(`index.html not found at: ${indexPath}`);
+          res.status(404).send("Application not built correctly. index.html missing.");
+        }
+      });
+    } else {
+      console.error(`dist directory not found at: ${distPath}`);
+      app.get("*", (req, res) => {
+        res.status(404).send("Application not built. Please run 'npm run build' first.");
+      });
+    }
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
+  // Only start listening if not in a serverless environment (like Vercel)
+  if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  }
 }
 
 startServer();
+
+export default app;
