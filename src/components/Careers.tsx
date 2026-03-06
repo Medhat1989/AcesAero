@@ -11,38 +11,58 @@ import {
   Languages
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { cn } from '../lib/utils';
 
-const JobCard = ({ title, location, type, description, requirements, benefits }: { 
+const JobCard = ({ title, location, type, description, requirements, benefits, isOpen = false }: { 
   title: string, 
   location: string, 
   type: string, 
   description: string,
   requirements: string[],
-  benefits?: { label: string, value: string }[]
+  benefits?: { label: string, value: string }[],
+  isOpen?: boolean
 }) => (
   <motion.div 
     initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
-    className="glass p-6 md:p-12 rounded-[1.5rem] md:rounded-[2.5rem] border border-white/10 hover:border-aviation-gold/30 transition-all group"
+    animate={{ opacity: 1, y: 0 }}
+    className={cn(
+      "glass p-6 md:p-12 rounded-[1.5rem] md:rounded-[2.5rem] border transition-all group",
+      isOpen ? "border-aviation-gold/20 hover:border-aviation-gold/50" : "border-white/10 opacity-80"
+    )}
   >
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
       <div>
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 text-red-500 text-[10px] font-bold uppercase tracking-widest mb-4">
-          Recruitment Closed
-        </div>
+        {isOpen ? (
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase tracking-widest mb-4">
+            <CheckCircle2 className="w-3 h-3" /> Now Hiring
+          </div>
+        ) : (
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 text-red-500 text-[10px] font-bold uppercase tracking-widest mb-4">
+            Recruitment Closed
+          </div>
+        )}
         <h3 className="text-2xl md:text-4xl font-display font-bold mb-2">{title}</h3>
         <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 text-white/50 text-xs md:text-sm">
           <span className="flex items-center gap-1.5"><MapPin className="w-4 h-4" /> {location}</span>
           <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> {type}</span>
-          <span className="flex items-center gap-1.5 text-aviation-gold font-bold"><Languages className="w-4 h-4" /> Arabic Speaking Mandatory</span>
+          <span className="flex items-center gap-1.5 text-aviation-gold font-bold"><Languages className="w-4 h-4" /> Arabic Speaking Preferred</span>
         </div>
       </div>
-      <div 
-        className="w-full md:w-auto px-8 py-4 bg-white/5 border border-white/10 text-white/40 font-bold rounded-full cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap text-sm md:text-base"
-      >
-        We no longer accept Applications
-      </div>
+      
+      {isOpen ? (
+        <Link 
+          to="/apply"
+          className="w-full md:w-auto px-10 py-4 bg-aviation-gold text-black font-bold rounded-full hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 whitespace-nowrap text-sm md:text-base shadow-[0_0_20px_rgba(212,175,55,0.3)]"
+        >
+          Apply Now <ArrowRight className="w-5 h-5" />
+        </Link>
+      ) : (
+        <div 
+          className="w-full md:w-auto px-8 py-4 bg-white/5 border border-white/10 text-white/40 font-bold rounded-full cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap text-sm md:text-base"
+        >
+          Applications Closed
+        </div>
+      )}
     </div>
 
     <div className="grid lg:grid-cols-2 gap-8 md:gap-12">
@@ -109,7 +129,7 @@ export default function Careers() {
               <span className="text-aviation-gold">CAREERS</span>.
             </h1>
             <p className="text-base md:text-xl text-white/50 max-w-2xl mx-auto mb-8 md:mb-12">
-              The recruitment window for current positions has closed. We thank all applicants for their interest. Please check back later for future opportunities within our elite crew.
+              Join our elite team of aviation professionals. We are currently seeking exceptional talent for our flight operations. Explore our open positions below.
             </p>
           </motion.div>
         </div>
@@ -127,9 +147,34 @@ export default function Careers() {
 
           <div className="space-y-8">
             <JobCard 
+              title="A330 First Officer"
+              location="Jeddah, Saudi Arabia"
+              type="Full-Time"
+              isOpen={true}
+              description="We are looking for highly skilled A330 First Officers to join our expanding fleet operations in the Middle East. You will be part of a professional flight deck crew committed to the highest safety standards and operational excellence. This role offers the opportunity to fly a modern wide-body fleet across a diverse international network."
+              requirements={[
+                "Valid ICAO/EASA/GACA ATPL or CPL with ATPL theory",
+                "Current A330 Type Rating with minimum 500 hours on type",
+                "Minimum 1,500 hours total flying time on multi-pilot aircraft",
+                "Valid Class 1 Medical Certificate",
+                "ICAO English Language Proficiency Level 4 or higher",
+                "No history of accidents or incidents",
+                "Strong CRM skills and professional attitude",
+                "Arabic language skills are highly advantageous"
+              ]}
+              benefits={[
+                { label: "Remuneration", value: "Competitive tax-free salary package with flight pay and allowances." },
+                { label: "Accommodation", value: "Premium housing provided in Jeddah or housing allowance." },
+                { label: "Rotation", value: "Flexible roster patterns designed for international commuting." },
+                { label: "Insurance", value: "Comprehensive medical and loss of license insurance." }
+              ]}
+            />
+
+            <JobCard 
               title="Experienced Cabin Crew"
               location="Jeddah, Saudi Arabia | Cairo, Egypt"
               type="Full-Time"
+              isOpen={false}
               description="We are seeking highly motivated and experienced Cabin Crew members to join our operations in the Middle East. As a representative of AcesAds Aero, you will be responsible for delivering world-class service while ensuring the safety and comfort of all passengers. This role requires a perfect blend of elegance, cultural awareness, and technical proficiency."
               requirements={[
                 "Mandatory fluency in Arabic and English (Written & Spoken)",

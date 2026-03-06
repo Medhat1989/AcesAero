@@ -255,6 +255,61 @@ const CrewSection = () => {
   );
 };
 
+const FlightDeckSection = () => {
+  return (
+    <section id="flight-deck" className="py-16 md:py-24 px-4 md:px-6 bg-[#050505] relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-1/2 h-full bg-aviation-gold/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2" />
+      
+      <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 md:gap-16 items-center">
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase tracking-widest mb-6">
+            <CheckCircle2 className="w-3 h-3" /> Now Hiring Pilots
+          </div>
+          <h2 className="text-3xl md:text-6xl font-display font-bold mb-6 md:mb-8">
+            Flight Deck <br />
+            <span className="text-aviation-gold">Opportunities</span>
+          </h2>
+          <div className="space-y-4 md:space-y-6 text-white/60 leading-relaxed text-sm md:text-base">
+            <p>
+              We are expanding our flight operations and seeking experienced A330 First Officers to join our Jeddah-based fleet. Join a team dedicated to the highest standards of safety and operational excellence.
+            </p>
+            <ul className="space-y-3">
+              <li className="flex items-center gap-3 text-white/80">
+                <CheckCircle2 className="w-5 h-5 text-aviation-gold" />
+                <span>A330 Type Rating Required</span>
+              </li>
+              <li className="flex items-center gap-3 text-white/80">
+                <CheckCircle2 className="w-5 h-5 text-aviation-gold" />
+                <span>Competitive Tax-Free Package</span>
+              </li>
+              <li className="flex items-center gap-3 text-white/80">
+                <CheckCircle2 className="w-5 h-5 text-aviation-gold" />
+                <span>International Network Operations</span>
+              </li>
+            </ul>
+            <div className="pt-4">
+              <RouterLink to="/careers" className="px-8 py-4 bg-aviation-gold text-black font-bold rounded-full hover:scale-105 transition-all inline-flex items-center gap-2">
+                View Pilot Openings <ArrowRight className="w-5 h-5" />
+              </RouterLink>
+            </div>
+          </div>
+        </div>
+        <div className="relative">
+          <img 
+            src="https://images.unsplash.com/photo-1569154941061-e231b4725ef1?auto=format&fit=crop&q=80&w=1000" 
+            alt="A330 Cockpit" 
+            className="rounded-2xl md:rounded-3xl shadow-2xl border border-white/10 grayscale hover:grayscale-0 transition-all duration-700"
+            referrerPolicy="no-referrer"
+          />
+          <div className="absolute -top-4 -left-4 glass p-4 rounded-xl border border-aviation-gold/30">
+            <Plane className="text-aviation-gold w-8 h-8" />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const GroundStaff = () => {
   return (
     <section id="ground" className="py-16 md:py-24 px-4 md:px-6 bg-aviation-blue/30">
@@ -354,6 +409,7 @@ const LandingPage = () => (
   <>
     <Hero />
     <ServicesSection />
+    <FlightDeckSection />
     <CrewSection />
     <GroundStaff />
     
@@ -386,7 +442,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/services" element={<ServicesPage />} />
-          <Route path="/apply" element={<Navigate to="/careers" replace />} />
+          <Route path="/apply" element={<TalentForm />} />
           <Route path="/partner" element={<PartnerForm />} />
           <Route path="/careers" element={<Careers />} />
         </Routes>

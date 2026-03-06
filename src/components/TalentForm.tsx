@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, Upload, CheckCircle2, Loader2, Plane, X } from 'lucide-react';
+import { ArrowLeft, Upload, CheckCircle2, Loader2, Plane, X, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { collection, addDoc } from 'firebase/firestore';
@@ -17,7 +17,7 @@ export default function TalentForm() {
     email: '',
     nationality: '',
     dob: '',
-    crewType: 'EASA Cabin Crew'
+    crewType: 'A330 First Officer'
   });
   const [files, setFiles] = useState<{ [key: string]: File | null }>({
     cv: null,
@@ -98,35 +98,27 @@ export default function TalentForm() {
     }
   };
 
-  if (true) {
+  if (isSubmitted) {
     return (
       <div className="min-h-screen bg-[#030014] flex items-center justify-center px-6 py-20">
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="glass p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] text-center max-w-lg w-full border border-red-500/20"
+          className="glass p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] text-center max-w-lg w-full"
         >
           <div className="w-16 h-16 md:w-20 md:h-20 glass-button rounded-full flex items-center justify-center mx-auto mb-6 md:mb-8">
-            <X className="text-red-500 w-8 h-8 md:w-10 md:h-10" />
+            <CheckCircle2 className="text-white w-8 h-8 md:w-10 md:h-10" />
           </div>
-          <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">Recruitment Closed</h2>
+          <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">Application Successfully Submitted</h2>
           <p className="text-white/60 mb-8 text-sm md:text-base">
-            The recruitment window for current positions has closed. We are no longer accepting new applications at this time. Please check our Careers page for future updates.
+            Thank you for applying to AcesAds Aero. Our recruitment team will review your application and contact you at the email provided in your CV.
           </p>
-          <div className="flex flex-col gap-4">
-            <button 
-              onClick={() => navigate('/careers')}
-              className="px-8 py-4 glass-button text-white font-bold rounded-full hover:scale-105 transition-transform"
-            >
-              View Careers Page
-            </button>
-            <button 
-              onClick={() => navigate('/')}
-              className="px-8 py-4 text-white/40 hover:text-white transition-colors"
-            >
-              Return to Home
-            </button>
-          </div>
+          <button 
+            onClick={() => navigate('/')}
+            className="px-8 py-4 glass-button text-white font-bold rounded-full hover:scale-105 transition-transform"
+          >
+            Return to Home
+          </button>
         </motion.div>
       </div>
     );
@@ -141,13 +133,10 @@ export default function TalentForm() {
 
         <div className="mb-8 md:mb-12">
           <h1 className="text-3xl md:text-5xl font-display font-bold mb-4">Join Our <span className="text-aviation-gold">Talent Pool</span></h1>
-          <div className="p-6 md:p-8 glass border border-red-500/20 rounded-2xl md:rounded-3xl text-center">
-            <p className="text-red-500 font-bold text-lg md:text-xl mb-2">We no longer accept Applications</p>
-            <p className="text-white/40 text-sm">The recruitment window for current positions has closed. Please check back later for future opportunities.</p>
-          </div>
+          <p className="text-white/50 text-sm md:text-base">Please complete the form below to apply for our open positions. Ensure all documents are valid and up to date.</p>
         </div>
 
-        <form onSubmit={(e) => e.preventDefault()} className="space-y-6 md:space-y-8 opacity-40 pointer-events-none grayscale">
+        <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
           <div className="glass p-6 md:p-12 rounded-[1.5rem] md:rounded-[2.5rem] space-y-6 md:space-y-8">
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -216,15 +205,16 @@ export default function TalentForm() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold uppercase tracking-widest text-aviation-gold">Crew Type</label>
+              <label className="text-xs font-bold uppercase tracking-widest text-aviation-gold">Position</label>
               <select 
                 name="crewType"
                 value={formData.crewType}
                 onChange={handleInputChange}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-aviation-gold outline-none transition-colors appearance-none text-base"
               >
-                <option value="EASA Cabin Crew" className="bg-black">EASA Cabin Crew</option>
-                <option value="Non-EASA Cabin Crew" className="bg-black">Non-EASA Cabin Crew</option>
+                <option value="A330 First Officer" className="bg-black">A330 First Officer</option>
+                <option value="EASA Cabin Crew (Closed)" disabled className="bg-black">EASA Cabin Crew (Closed)</option>
+                <option value="Non-EASA Cabin Crew (Closed)" disabled className="bg-black">Non-EASA Cabin Crew (Closed)</option>
               </select>
             </div>
 
@@ -263,11 +253,19 @@ export default function TalentForm() {
           </div>
 
           <button 
-            disabled={true}
-            type="button"
-            className="w-full py-5 bg-white/5 border border-white/10 text-white/40 font-bold rounded-full cursor-not-allowed flex items-center justify-center gap-3"
+            disabled={isSubmitting}
+            type="submit"
+            className="w-full py-5 glass-button text-white font-bold rounded-full hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
           >
-            We no longer accept Applications
+            {isSubmitting ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" /> Processing Application...
+              </>
+            ) : (
+              <>
+                Submit Application <ArrowRight className="w-5 h-5" />
+              </>
+            )}
           </button>
         </form>
       </div>
