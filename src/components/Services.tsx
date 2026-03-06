@@ -139,7 +139,7 @@ export default function Services() {
               <h2 className="text-3xl md:text-6xl font-display font-bold mb-4 md:mb-6">Ground Operations <br />& <span className="text-aviation-gold">Staffing</span></h2>
               <p className="text-white/50 text-sm md:text-base px-4 md:px-0">We provide the backbone of airport operations, ensuring every flight departs on time and every passenger experience is seamless.</p>
             </div>
-            <RouterLink to="/apply" className="w-full md:w-auto px-8 py-4 glass-button text-white font-bold rounded-full active:scale-95 transition-all text-center">
+            <RouterLink to="/partner" className="w-full md:w-auto px-8 py-4 glass-button text-white font-bold rounded-full active:scale-95 transition-all text-center">
               View Staffing Options
             </RouterLink>
           </div>

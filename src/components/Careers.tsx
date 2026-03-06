@@ -28,8 +28,8 @@ const JobCard = ({ title, location, type, description, requirements, benefits }:
   >
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
       <div>
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 text-aviation-gold text-[10px] font-bold uppercase tracking-widest mb-4">
-          Active Recruitment
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 text-red-500 text-[10px] font-bold uppercase tracking-widest mb-4">
+          Recruitment Closed
         </div>
         <h3 className="text-2xl md:text-4xl font-display font-bold mb-2">{title}</h3>
         <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 text-white/50 text-xs md:text-sm">
@@ -38,12 +38,11 @@ const JobCard = ({ title, location, type, description, requirements, benefits }:
           <span className="flex items-center gap-1.5 text-aviation-gold font-bold"><Languages className="w-4 h-4" /> Arabic Speaking Mandatory</span>
         </div>
       </div>
-      <Link 
-        to="/apply" 
-        className="w-full md:w-auto px-8 py-4 glass-button text-white font-bold rounded-full hover:scale-105 transition-transform flex items-center justify-center gap-2 whitespace-nowrap text-sm md:text-base"
+      <div 
+        className="w-full md:w-auto px-8 py-4 bg-white/5 border border-white/10 text-white/40 font-bold rounded-full cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap text-sm md:text-base"
       >
-        Apply Now <ArrowRight className="w-4 h-4" />
-      </Link>
+        We no longer accept Applications
+      </div>
     </div>
 
     <div className="grid lg:grid-cols-2 gap-8 md:gap-12">
@@ -106,11 +105,11 @@ export default function Careers() {
             transition={{ duration: 0.6 }}
           >
             <h1 className="text-4xl sm:text-6xl md:text-8xl font-display font-bold mb-6 md:mb-8 leading-[1.1] md:leading-[0.9]">
-              JOIN THE <br />
-              <span className="text-aviation-gold">ELITE</span> CREW.
+              OUR <br />
+              <span className="text-aviation-gold">CAREERS</span>.
             </h1>
             <p className="text-base md:text-xl text-white/50 max-w-2xl mx-auto mb-8 md:mb-12">
-              Start your journey with the Middle East's most prestigious aviation service provider. We are looking for exceptional talent to represent our brand in the skies.
+              The recruitment window for current positions has closed. We thank all applicants for their interest. Please check back later for future opportunities within our elite crew.
             </p>
           </motion.div>
         </div>

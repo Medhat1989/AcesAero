@@ -11,6 +11,7 @@ export default function PartnerForm() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     companyName: '',
     contactName: '',
@@ -46,17 +47,48 @@ export default function PartnerForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
     try {
+      // 1. Save to Firestore
       await addDoc(collection(db, 'partnerships'), {
         ...formData,
         services: selectedServices,
         status: 'new',
         createdAt: new Date().toISOString()
       });
+
+      // 2. Call backend API for email
+      const response = await fetch('/api/partner', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          services: selectedServices.map(id => services.find(s => s.id === id)?.label || id)
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to send partnership request email.');
+      }
+
+      if (result.warning) {
+        console.warn("Email warning:", result.warning);
+        setError(`Request saved, but email notification failed: ${result.warning}. Please ensure SMTP is configured.`);
+        setIsSubmitting(false);
+        return;
+      }
+
       setIsSubmitted(true);
-    } catch (error) {
-      handleFirestoreError(error, OperationType.CREATE, 'partnerships');
+    } catch (err: any) {
+      console.error("Partnership Submission Error:", err);
+      if (err.name === 'FirebaseError') {
+        handleFirestoreError(err, OperationType.CREATE, 'partnerships');
+      } else {
+        setError(err.message || 'An unexpected error occurred. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -99,6 +131,12 @@ export default function PartnerForm() {
           <h1 className="text-3xl md:text-6xl font-display font-bold mb-4">Partner With <span className="text-aviation-gold">AcesAds Aero</span></h1>
           <p className="text-white/50 text-lg">Optimized solutions for operators and airlines looking for excellence in the Middle East.</p>
         </div>
+
+        {error && (
+          <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="glass p-8 md:p-10 rounded-[2rem] space-y-6">

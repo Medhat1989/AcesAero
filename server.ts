@@ -14,8 +14,9 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 // Configure Nodemailer
-// Note: In production, you'll need to set these environment variables
-const transporter = nodemailer.createTransport({
+// Note: For Gmail, you MUST use an "App Password" if 2FA is enabled.
+// See: https://support.google.com/accounts/answer/185833
+let transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.gmail.com",
   port: parseInt(process.env.SMTP_PORT || "587"),
   secure: process.env.SMTP_SECURE === "true",
@@ -29,6 +30,31 @@ const app = express();
 
 async function startServer() {
   const PORT = 3000;
+
+  console.log("Checking SMTP Configuration...");
+  console.log("SMTP_HOST:", process.env.SMTP_HOST || "smtp.gmail.com (default)");
+  console.log("SMTP_USER:", process.env.SMTP_USER ? "Configured" : "MISSING");
+  console.log("SMTP_PASS:", process.env.SMTP_PASS ? "Configured" : "MISSING");
+
+  if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    try {
+      await transporter.verify();
+      console.log("SMTP Connection verified successfully.");
+    } catch (error) {
+      console.error("SMTP Verification Failed:", error);
+      // If it fails, try to re-init with service: 'gmail' if it's gmail
+      if ((process.env.SMTP_HOST || "").includes("gmail") || process.env.SMTP_USER?.includes("gmail")) {
+        console.log("Attempting Gmail-specific configuration...");
+        transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+          },
+        });
+      }
+    }
+  }
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
@@ -94,8 +120,24 @@ async function startServer() {
       };
 
       if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-        await transporter.sendMail(mailOptions);
-        console.log("Email sent successfully to:", adminEmail);
+        try {
+          await transporter.sendMail(mailOptions);
+          console.log("Email sent successfully to:", adminEmail);
+        } catch (mailError: any) {
+          console.error("Nodemailer Error:", mailError);
+          return res.status(500).json({ 
+            success: false, 
+            message: "Failed to send email notification.",
+            error: mailError.message 
+          });
+        }
+      } else {
+        console.warn("SMTP credentials not configured. Email not sent.");
+        return res.status(200).json({ 
+          success: true, 
+          message: "Application saved to database, but email notification skipped (SMTP not configured).",
+          warning: "SMTP_USER and SMTP_PASS environment variables are missing."
+        });
       }
 
       res.status(200).json({ 
@@ -136,8 +178,24 @@ async function startServer() {
       };
 
       if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-        await transporter.sendMail(mailOptions);
-        console.log("Partnership email sent successfully to:", adminEmail);
+        try {
+          await transporter.sendMail(mailOptions);
+          console.log("Partnership email sent successfully to:", adminEmail);
+        } catch (mailError: any) {
+          console.error("Partnership Nodemailer Error:", mailError);
+          return res.status(500).json({ 
+            success: false, 
+            message: "Failed to send partnership email notification.",
+            error: mailError.message 
+          });
+        }
+      } else {
+        console.warn("SMTP credentials not configured. Partnership email not sent.");
+        return res.status(200).json({ 
+          success: true, 
+          message: "Partnership request saved, but email notification skipped (SMTP not configured).",
+          warning: "SMTP_USER and SMTP_PASS environment variables are missing."
+        });
       }
 
       res.status(200).json({ 

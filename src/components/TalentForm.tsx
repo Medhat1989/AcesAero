@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, Upload, CheckCircle2, Loader2, Plane } from 'lucide-react';
+import { ArrowLeft, Upload, CheckCircle2, Loader2, Plane, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { collection, addDoc } from 'firebase/firestore';
@@ -10,6 +10,7 @@ export default function TalentForm() {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     surname: '',
@@ -38,15 +39,15 @@ export default function TalentForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
     try {
-      // In a real app with file uploads, we'd use Firebase Storage.
-      // For this demo, we'll store the metadata and a placeholder for files.
+      // 1. Save to Firestore for database record
       await addDoc(collection(db, 'applications'), {
         fullName: `${formData.name} ${formData.surname}`,
         email: formData.email,
         role: formData.crewType,
-        experience: 'N/A', // Could be added to form
+        experience: 'N/A',
         status: 'pending',
         createdAt: new Date().toISOString(),
         ...formData,
@@ -55,35 +56,77 @@ export default function TalentForm() {
         hasHRLetter: !!files.hrLetter
       });
 
+      // 2. Prepare FormData for backend API (Email with attachments)
+      const apiFormData = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        apiFormData.append(key, value);
+      });
+      
+      if (files.cv) apiFormData.append('cv', files.cv);
+      if (files.license) apiFormData.append('license', files.license);
+      if (files.hrLetter) apiFormData.append('hrLetter', files.hrLetter);
+
+      // 3. Call backend API to send email
+      const response = await fetch('/api/apply', {
+        method: 'POST',
+        body: apiFormData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to send email notification.');
+      }
+
+      if (result.warning) {
+        console.warn("Email warning:", result.warning);
+        setError(`Application saved, but email notification failed: ${result.warning}. Please ensure SMTP is configured.`);
+        setIsSubmitting(false);
+        return;
+      }
+
       setIsSubmitted(true);
-    } catch (error) {
-      handleFirestoreError(error, OperationType.CREATE, 'applications');
+    } catch (err: any) {
+      console.error("Submission Error:", err);
+      if (err.name === 'FirebaseError') {
+        handleFirestoreError(err, OperationType.CREATE, 'applications');
+      } else {
+        setError(err.message || 'An unexpected error occurred. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (isSubmitted) {
+  if (true) {
     return (
       <div className="min-h-screen bg-[#030014] flex items-center justify-center px-6 py-20">
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="glass p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] text-center max-w-lg w-full"
+          className="glass p-8 md:p-12 rounded-[2rem] md:rounded-[3rem] text-center max-w-lg w-full border border-red-500/20"
         >
           <div className="w-16 h-16 md:w-20 md:h-20 glass-button rounded-full flex items-center justify-center mx-auto mb-6 md:mb-8">
-            <CheckCircle2 className="text-white w-8 h-8 md:w-10 md:h-10" />
+            <X className="text-red-500 w-8 h-8 md:w-10 md:h-10" />
           </div>
-          <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">Application Successfully Submitted</h2>
+          <h2 className="text-3xl md:text-4xl font-display font-bold mb-4">Recruitment Closed</h2>
           <p className="text-white/60 mb-8 text-sm md:text-base">
-            Thank you for applying to AcesAds Aero. Our recruitment team will review your application and contact you at the email provided in your CV.
+            The recruitment window for current positions has closed. We are no longer accepting new applications at this time. Please check our Careers page for future updates.
           </p>
-          <button 
-            onClick={() => navigate('/')}
-            className="px-8 py-4 glass-button text-white font-bold rounded-full hover:scale-105 transition-transform"
-          >
-            Return to Home
-          </button>
+          <div className="flex flex-col gap-4">
+            <button 
+              onClick={() => navigate('/careers')}
+              className="px-8 py-4 glass-button text-white font-bold rounded-full hover:scale-105 transition-transform"
+            >
+              View Careers Page
+            </button>
+            <button 
+              onClick={() => navigate('/')}
+              className="px-8 py-4 text-white/40 hover:text-white transition-colors"
+            >
+              Return to Home
+            </button>
+          </div>
         </motion.div>
       </div>
     );
@@ -98,10 +141,13 @@ export default function TalentForm() {
 
         <div className="mb-8 md:mb-12">
           <h1 className="text-3xl md:text-5xl font-display font-bold mb-4">Join Our <span className="text-aviation-gold">Talent Pool</span></h1>
-          <p className="text-white/50 text-sm md:text-base">Complete the form below to start your journey with AcesAds Aero.</p>
+          <div className="p-6 md:p-8 glass border border-red-500/20 rounded-2xl md:rounded-3xl text-center">
+            <p className="text-red-500 font-bold text-lg md:text-xl mb-2">We no longer accept Applications</p>
+            <p className="text-white/40 text-sm">The recruitment window for current positions has closed. Please check back later for future opportunities.</p>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-6 md:space-y-8 opacity-40 pointer-events-none grayscale">
           <div className="glass p-6 md:p-12 rounded-[1.5rem] md:rounded-[2.5rem] space-y-6 md:space-y-8">
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -217,19 +263,11 @@ export default function TalentForm() {
           </div>
 
           <button 
-            disabled={isSubmitting}
-            type="submit"
-            className="w-full py-5 glass-button text-white font-bold rounded-full hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+            disabled={true}
+            type="button"
+            className="w-full py-5 bg-white/5 border border-white/10 text-white/40 font-bold rounded-full cursor-not-allowed flex items-center justify-center gap-3"
           >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" /> Submitting...
-              </>
-            ) : (
-              <>
-                Submit Application <Plane className="w-5 h-5 -rotate-45" />
-              </>
-            )}
+            We no longer accept Applications
           </button>
         </form>
       </div>

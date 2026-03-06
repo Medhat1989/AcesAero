@@ -21,6 +21,7 @@ import {
   BrowserRouter as Router, 
   Routes, 
   Route, 
+  Navigate,
   Link as RouterLink,
   useNavigate
 } from 'react-router-dom';
@@ -70,7 +71,7 @@ const Navbar = () => {
           <RouterLink to="/services" className="hover:text-aviation-gold transition-colors">Services</RouterLink>
           <RouterLink to="/careers" className="hover:text-aviation-gold transition-colors">Careers</RouterLink>
           <a href="#ground" onClick={(e) => handleNavClick(e, '#ground')} className="hover:text-aviation-gold transition-colors">Ground Ops</a>
-          <RouterLink to="/apply" className="px-5 py-2 bg-white text-black rounded-full hover:bg-aviation-gold hover:text-white transition-all">Get Started</RouterLink>
+          <RouterLink to="/partner" className="px-5 py-2 bg-white text-black rounded-full hover:bg-aviation-gold hover:text-white transition-all">Partner With Us</RouterLink>
         </div>
 
         <button className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
@@ -91,7 +92,7 @@ const Navbar = () => {
               <RouterLink to="/careers" className="px-4 py-4 text-xl font-display font-bold hover:text-aviation-gold transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Careers</RouterLink>
               <a href="#ground" className="px-4 py-4 text-xl font-display font-bold hover:text-aviation-gold transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Ground Ops</a>
             <div className="h-px bg-white/5 my-4 mx-4" />
-            <RouterLink to="/apply" className="mt-4 glass-button text-white p-5 rounded-2xl text-center font-bold text-lg active:scale-95 transition-transform" onClick={() => setIsMobileMenuOpen(false)}>Get Started</RouterLink>
+            <RouterLink to="/partner" className="mt-4 glass-button text-white p-5 rounded-2xl text-center font-bold text-lg active:scale-95 transition-transform" onClick={() => setIsMobileMenuOpen(false)}>Partner With Us</RouterLink>
           </div>
           </motion.div>
         )}
@@ -139,7 +140,7 @@ const Hero = () => {
               Explore Services <ArrowRight className="w-5 h-5" />
             </RouterLink>
             <RouterLink to="/careers" className="px-12 py-5 glass rounded-full hover:bg-white/10 transition-all text-lg flex items-center justify-center">
-              JOIN THE ELITE CREW
+              VIEW CAREERS
             </RouterLink>
           </div>
         </motion.div>
@@ -244,9 +245,9 @@ const CrewSection = () => {
             <p>
               Our recruitment process is rigorous, focusing not just on technical skills but on the "Aero Spirit"—a commitment to safety, elegance, and unparalleled service.
             </p>
-            <button className="group flex items-center gap-3 text-aviation-gold font-bold hover:gap-5 transition-all">
+            <RouterLink to="/careers" className="group flex items-center gap-3 text-aviation-gold font-bold hover:gap-5 transition-all">
               Learn about our training <ChevronRight className="w-5 h-5" />
-            </button>
+            </RouterLink>
           </div>
         </div>
       </div>
@@ -263,9 +264,9 @@ const GroundStaff = () => {
             <h2 className="text-3xl md:text-6xl font-display font-bold mb-4 md:mb-6">Ground Operations <br />& <span className="text-aviation-gold">Staffing</span></h2>
             <p className="text-white/50 text-sm md:text-base px-4 md:px-0">We provide the backbone of airport operations, ensuring every flight departs on time and every passenger experience is seamless.</p>
           </div>
-          <button className="w-full md:w-auto px-8 py-4 glass-button text-white font-bold rounded-full active:scale-95 transition-all">
+          <RouterLink to="/partner" className="w-full md:w-auto px-8 py-4 glass-button text-white font-bold rounded-full active:scale-95 transition-all text-center">
             View Staffing Options
-          </button>
+          </RouterLink>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -368,8 +369,8 @@ const LandingPage = () => (
           <RouterLink to="/partner" className="w-full md:w-auto px-12 py-5 glass-button text-white font-bold rounded-full hover:scale-105 transition-transform">
             Partner With Us
           </RouterLink>
-          <RouterLink to="/apply" className="w-full md:w-auto px-12 py-5 glass rounded-full hover:bg-white/10 transition-all">
-            Join Our Talent Pool
+          <RouterLink to="/careers" className="w-full md:w-auto px-12 py-5 glass rounded-full hover:bg-white/10 transition-all">
+            View Careers
           </RouterLink>
         </div>
       </div>
@@ -385,7 +386,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/services" element={<ServicesPage />} />
-          <Route path="/apply" element={<TalentForm />} />
+          <Route path="/apply" element={<Navigate to="/careers" replace />} />
           <Route path="/partner" element={<PartnerForm />} />
           <Route path="/careers" element={<Careers />} />
         </Routes>
