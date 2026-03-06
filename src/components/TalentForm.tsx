@@ -3,6 +3,9 @@ import { motion } from 'motion/react';
 import { ArrowLeft, Upload, CheckCircle2, Loader2, Plane } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
+import { db } from '../firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { handleFirestoreError, OperationType } from '../firestoreUtils';
 
 export default function TalentForm() {
   const navigate = useNavigate();
@@ -43,7 +46,21 @@ export default function TalentForm() {
     });
 
     try {
-      console.log("Submitting form data:", formData);
+      // 1. Save to Firestore for the Admin Dashboard
+      try {
+        await addDoc(collection(db, 'applications'), {
+          ...formData,
+          status: 'pending',
+          createdAt: serverTimestamp(),
+          hasCv: !!files.cv,
+          hasLicense: !!files.license,
+          hasHrLetter: !!files.hrLetter
+        });
+      } catch (error) {
+        handleFirestoreError(error, OperationType.CREATE, 'applications');
+      }
+
+      console.log("Submitting form data to email API:", formData);
       console.log("Files to upload:", Object.keys(files).filter(k => files[k]));
 
       const apiUrl = '/api/apply';

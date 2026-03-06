@@ -1,0 +1,48 @@
+{
+  "entities": {
+    "TalentApplication": {
+      "title": "Talent Application",
+      "description": "A job application from a candidate",
+      "type": "object",
+      "properties": {
+        "fullName": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "nationality": { "type": "string" },
+        "position": { "type": "string" },
+        "experience": { "type": "string" },
+        "cvUrl": { "type": "string", "format": "uri" },
+        "photoUrl": { "type": "string", "format": "uri" },
+        "status": { "type": "string", "enum": ["pending", "reviewed", "accepted", "rejected"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["fullName", "email", "position", "cvUrl", "createdAt"]
+    },
+    "PartnerRequest": {
+      "title": "Partner Request",
+      "description": "A partnership request from a company",
+      "type": "object",
+      "properties": {
+        "companyName": { "type": "string" },
+        "contactName": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "serviceType": { "type": "string" },
+        "message": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "contacted", "partnered", "archived"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["companyName", "contactName", "email", "serviceType", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/applications/{applicationId}": {
+      "schema": "TalentApplication",
+      "description": "Collection of talent applications"
+    },
+    "/partnerships/{partnershipId}": {
+      "schema": "PartnerRequest",
+      "description": "Collection of partnership requests"
+    }
+  }
+}

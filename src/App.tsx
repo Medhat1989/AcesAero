@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { 
   BrowserRouter as Router, 
+  HashRouter,
   Routes, 
   Route, 
   Link as RouterLink,
@@ -28,6 +29,8 @@ import TalentForm from './components/TalentForm';
 import Careers from './components/Careers';
 import ServicesPage from './components/Services';
 import PartnerForm from './components/PartnerForm';
+import AdminDashboard from './components/AdminDashboard';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { generateCabinCrewGroupImage } from './services/imageService';
 import { cn } from './lib/utils';
 
@@ -67,10 +70,12 @@ const Navbar = () => {
         </RouterLink>
 
         <div className="hidden md:flex items-center gap-8 text-sm font-medium">
+          <RouterLink to="/" className="hover:text-aviation-gold transition-colors">Home</RouterLink>
           <RouterLink to="/services" className="hover:text-aviation-gold transition-colors">Services</RouterLink>
           <RouterLink to="/careers" className="hover:text-aviation-gold transition-colors">Careers</RouterLink>
+          <RouterLink to="/admin" className="px-4 py-1 bg-aviation-gold/20 border border-aviation-gold text-aviation-gold rounded-full hover:bg-aviation-gold hover:text-black transition-all font-bold">Admin Panel</RouterLink>
           <a href="#ground" onClick={(e) => handleNavClick(e, '#ground')} className="hover:text-aviation-gold transition-colors">Ground Ops</a>
-          <RouterLink to="/apply" className="px-5 py-2 bg-white text-black rounded-full hover:bg-aviation-gold hover:text-white transition-all">Get Started</RouterLink>
+          <RouterLink to="/apply" className="px-5 py-2 bg-white text-black rounded-full hover:bg-aviation-gold hover:text-white transition-all">GET STARTED NOW</RouterLink>
         </div>
 
         <button className="md:hidden" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
@@ -87,8 +92,10 @@ const Navbar = () => {
             className="absolute top-full left-0 right-0 bg-[#030014] border-b border-white/10 overflow-hidden md:hidden"
           >
             <div className="p-8 flex flex-col gap-2">
+              <RouterLink to="/" className="px-4 py-4 text-xl font-display font-bold hover:text-aviation-gold transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Home</RouterLink>
               <RouterLink to="/services" className="px-4 py-4 text-xl font-display font-bold hover:text-aviation-gold transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Services</RouterLink>
               <RouterLink to="/careers" className="px-4 py-4 text-xl font-display font-bold hover:text-aviation-gold transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Careers</RouterLink>
+              <RouterLink to="/admin" className="px-4 py-4 text-xl font-display font-bold text-aviation-gold bg-aviation-gold/10 rounded-xl" onClick={() => setIsMobileMenuOpen(false)}>Admin Panel</RouterLink>
               <a href="#ground" className="px-4 py-4 text-xl font-display font-bold hover:text-aviation-gold transition-colors" onClick={() => setIsMobileMenuOpen(false)}>Ground Ops</a>
             <div className="h-px bg-white/5 my-4 mx-4" />
             <RouterLink to="/apply" className="mt-4 glass-button text-white p-5 rounded-2xl text-center font-bold text-lg active:scale-95 transition-transform" onClick={() => setIsMobileMenuOpen(false)}>Get Started</RouterLink>
@@ -379,18 +386,29 @@ const LandingPage = () => (
 
 export default function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-[#050505]">
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/services" element={<ServicesPage />} />
-          <Route path="/apply" element={<TalentForm />} />
-          <Route path="/partner" element={<PartnerForm />} />
-          <Route path="/careers" element={<Careers />} />
-        </Routes>
-        <Footer />
-      </div>
-    </Router>
+    <ErrorBoundary>
+      <HashRouter>
+        <div className="min-h-screen bg-[#050505]">
+          <Navbar />
+          <div className="fixed bottom-4 left-4 z-[100] flex flex-col gap-2">
+            <div className="text-[12px] text-black bg-aviation-gold px-2 py-1 rounded font-bold shadow-lg">
+              DEBUG PATH: {window.location.pathname}
+            </div>
+            <div className="text-[10px] text-white bg-red-600 px-2 py-1 rounded font-bold animate-pulse">
+              VERSION: 2.0.1 (HASH ROUTER)
+            </div>
+          </div>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/services" element={<ServicesPage />} />
+            <Route path="/apply" element={<TalentForm />} />
+            <Route path="/partner" element={<PartnerForm />} />
+            <Route path="/careers" element={<Careers />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+          </Routes>
+          <Footer />
+        </div>
+      </HashRouter>
+    </ErrorBoundary>
   );
 }

@@ -3,6 +3,9 @@ import { motion } from 'motion/react';
 import { ArrowLeft, CheckCircle2, Loader2, Building2, Globe, Users, ShieldCheck, Truck } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
+import { db } from '../firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { handleFirestoreError, OperationType } from '../firestoreUtils';
 
 export default function PartnerForm() {
   const navigate = useNavigate();
@@ -45,6 +48,18 @@ export default function PartnerForm() {
     setIsSubmitting(true);
 
     try {
+      // 1. Save to Firestore for the Admin Dashboard
+      try {
+        await addDoc(collection(db, 'partnerships'), {
+          ...formData,
+          services: selectedServices,
+          status: 'pending',
+          createdAt: serverTimestamp()
+        });
+      } catch (error) {
+        handleFirestoreError(error, OperationType.CREATE, 'partnerships');
+      }
+
       const response = await fetch('/api/partner', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
