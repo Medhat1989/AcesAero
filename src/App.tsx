@@ -28,8 +28,6 @@ import TalentForm from './components/TalentForm';
 import Careers from './components/Careers';
 import ServicesPage from './components/Services';
 import PartnerForm from './components/PartnerForm';
-import Login from './components/Login';
-import AdminPanel from './components/AdminPanel';
 import { generateCabinCrewGroupImage } from './services/imageService';
 import { cn } from './lib/utils';
 
@@ -72,7 +70,6 @@ const Navbar = () => {
           <RouterLink to="/services" className="hover:text-aviation-gold transition-colors">Services</RouterLink>
           <RouterLink to="/careers" className="hover:text-aviation-gold transition-colors">Careers</RouterLink>
           <a href="#ground" onClick={(e) => handleNavClick(e, '#ground')} className="hover:text-aviation-gold transition-colors">Ground Ops</a>
-          <RouterLink to="/login" className="px-4 py-2 border border-purple-500/50 bg-purple-500/10 text-purple-400 rounded-lg hover:bg-purple-500/20 transition-all">Admin Panel</RouterLink>
           <RouterLink to="/apply" className="px-5 py-2 bg-white text-black rounded-full hover:bg-aviation-gold hover:text-white transition-all">Get Started</RouterLink>
         </div>
 
@@ -391,8 +388,6 @@ export default function App() {
           <Route path="/apply" element={<TalentForm />} />
           <Route path="/partner" element={<PartnerForm />} />
           <Route path="/careers" element={<Careers />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/admin" element={<AdminPanel />} />
         </Routes>
         <Footer />
       </div>

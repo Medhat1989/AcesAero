@@ -35,7 +35,7 @@ class ErrorBoundary extends Component<Props, State> {
       try {
         const parsed = JSON.parse(this.state.errorInfo || "");
         if (parsed.error && parsed.error.includes("Missing or insufficient permissions")) {
-          displayMessage = "You do not have permission to perform this action or view this data. Please ensure you are logged in with the correct admin account.";
+          displayMessage = "You do not have permission to perform this action or view this data.";
         }
       } catch (e) {
         // Not JSON, use default or raw message
