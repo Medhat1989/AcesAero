@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowLeft, CheckCircle2, Loader2, Building2, Globe, Users, ShieldCheck, Truck } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { cn } from '../lib/utils';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { handleFirestoreError, OperationType } from '../firestoreUtils';
+import { collection, addDoc } from 'firebase/firestore';
+import { handleFirestoreError, OperationType } from '../utils/errorHandlers';
+import { cn } from '../utils/cn';
 
 export default function PartnerForm() {
   const navigate = useNavigate();
@@ -48,32 +48,15 @@ export default function PartnerForm() {
     setIsSubmitting(true);
 
     try {
-      // 1. Save to Firestore for the Admin Dashboard
-      try {
-        await addDoc(collection(db, 'partnerships'), {
-          ...formData,
-          services: selectedServices,
-          status: 'pending',
-          createdAt: serverTimestamp()
-        });
-      } catch (error) {
-        handleFirestoreError(error, OperationType.CREATE, 'partnerships');
-      }
-
-      const response = await fetch('/api/partner', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, services: selectedServices }),
+      await addDoc(collection(db, 'partnerships'), {
+        ...formData,
+        services: selectedServices,
+        status: 'new',
+        createdAt: new Date().toISOString()
       });
-
-      if (response.ok) {
-        setIsSubmitted(true);
-      } else {
-        alert('Something went wrong. Please try again.');
-      }
+      setIsSubmitted(true);
     } catch (error) {
-      console.error('Error submitting form:', error);
-      alert('Network error. Please try again.');
+      handleFirestoreError(error, OperationType.CREATE, 'partnerships');
     } finally {
       setIsSubmitting(false);
     }

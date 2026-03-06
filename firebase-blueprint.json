@@ -1,47 +1,44 @@
 {
   "entities": {
-    "TalentApplication": {
-      "title": "Talent Application",
-      "description": "A job application from a candidate",
+    "Application": {
+      "title": "Application",
+      "description": "Talent application for aviation roles",
       "type": "object",
       "properties": {
-        "fullName": { "type": "string" },
-        "email": { "type": "string", "format": "email" },
-        "phone": { "type": "string" },
-        "nationality": { "type": "string" },
-        "position": { "type": "string" },
-        "experience": { "type": "string" },
-        "cvUrl": { "type": "string", "format": "uri" },
-        "photoUrl": { "type": "string", "format": "uri" },
-        "status": { "type": "string", "enum": ["pending", "reviewed", "accepted", "rejected"] },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "fullName": { "type": "string", "description": "Full name of the applicant" },
+        "email": { "type": "string", "format": "email", "description": "Email address" },
+        "phone": { "type": "string", "description": "Phone number" },
+        "role": { "type": "string", "description": "Desired role" },
+        "experience": { "type": "string", "description": "Years of experience" },
+        "message": { "type": "string", "description": "Cover letter or message" },
+        "status": { "type": "string", "enum": ["pending", "reviewed", "interviewed", "rejected"], "description": "Application status" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Submission timestamp" }
       },
-      "required": ["fullName", "email", "position", "cvUrl", "createdAt"]
+      "required": ["fullName", "email", "role", "createdAt"]
     },
-    "PartnerRequest": {
-      "title": "Partner Request",
-      "description": "A partnership request from a company",
+    "Partnership": {
+      "title": "Partnership",
+      "description": "Business partnership request",
       "type": "object",
       "properties": {
-        "companyName": { "type": "string" },
-        "contactName": { "type": "string" },
-        "email": { "type": "string", "format": "email" },
-        "phone": { "type": "string" },
-        "serviceType": { "type": "string" },
-        "message": { "type": "string" },
-        "status": { "type": "string", "enum": ["pending", "contacted", "partnered", "archived"] },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "companyName": { "type": "string", "description": "Name of the company" },
+        "contactName": { "type": "string", "description": "Contact person name" },
+        "email": { "type": "string", "format": "email", "description": "Business email" },
+        "serviceType": { "type": "string", "description": "Type of service requested" },
+        "message": { "type": "string", "description": "Partnership details" },
+        "status": { "type": "string", "enum": ["new", "contacted", "active", "closed"], "description": "Request status" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Submission timestamp" }
       },
-      "required": ["companyName", "contactName", "email", "serviceType", "createdAt"]
+      "required": ["companyName", "contactName", "email", "createdAt"]
     }
   },
   "firestore": {
     "/applications/{applicationId}": {
-      "schema": "TalentApplication",
+      "schema": "Application",
       "description": "Collection of talent applications"
     },
     "/partnerships/{partnershipId}": {
-      "schema": "PartnerRequest",
+      "schema": "Partnership",
       "description": "Collection of partnership requests"
     }
   }

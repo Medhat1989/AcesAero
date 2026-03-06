@@ -1,110 +1,46 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // ===============================================================
-    // Assumed Data Model
-    // ===============================================================
-    //
-    // Collection: applications
-    // Fields:
-    //   - name: string (required)
-    //   - surname: string (required)
-    //   - email: string (required, email format)
-    //   - phone: string (optional)
-    //   - nationality: string (required)
-    //   - dob: string (required)
-    //   - crewType: string (required)
-    //   - status: string (required, enum: ['pending', 'reviewed', 'accepted', 'rejected'])
-    //   - createdAt: timestamp (required)
-    //   - hasCv: bool (required)
-    //   - hasLicense: bool (required)
-    //   - hasHrLetter: bool (required)
-    //
-    // Collection: partnerships
-    // Fields:
-    //   - companyName: string (required)
-    //   - contactName: string (required)
-    //   - email: string (required, email format)
-    //   - phone: string (required)
-    //   - operationType: string (required)
-    //   - fleetSize: string (optional)
-    //   - message: string (optional)
-    //   - services: list (required)
-    //   - status: string (required, enum: ['pending', 'contacted', 'partnered', 'archived'])
-    //   - createdAt: timestamp (required)
-    //
-    // ===============================================================
-
-    // ===============================================================
-    // Helper Functions
-    // ===============================================================
     
+    // Helper functions
     function isAuthenticated() {
       return request.auth != null;
     }
-
+    
     function isAdmin() {
-      return isAuthenticated() &&
-        (request.auth.token.email == "medhat.safari@gmail.com" && request.auth.token.email_verified == true);
+      return isAuthenticated() && 
+             request.auth.token.email == "medhat.safari@gmail.com" && 
+             request.auth.token.email_verified == true;
     }
 
-    function isValidEmail(email) {
-      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    function isValidApplication(data) {
+      return data.keys().hasAll(['fullName', 'email', 'role', 'createdAt']) &&
+             data.fullName is string && data.fullName.size() > 0 && data.fullName.size() < 100 &&
+             data.email is string && data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$") &&
+             data.role is string &&
+             data.createdAt is string;
     }
 
-    function hasOnlyAllowedFields(allowedFields) {
-      return request.resource.data.keys().hasOnly(allowedFields);
+    function isValidPartnership(data) {
+      return data.keys().hasAll(['companyName', 'contactName', 'email', 'createdAt']) &&
+             data.companyName is string && data.companyName.size() > 0 &&
+             data.contactName is string &&
+             data.email is string && data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$") &&
+             data.createdAt is string;
     }
 
-    // ===============================================================
-    // Collection Rules
-    // ===============================================================
-
+    // Applications collection
     match /applications/{applicationId} {
-      function isValidApplication(data) {
-        return data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
-               data.surname is string && data.surname.size() > 0 && data.surname.size() < 100 &&
-               isValidEmail(data.email) &&
-               data.nationality is string &&
-               data.crewType is string &&
-               data.status in ['pending', 'reviewed', 'accepted', 'rejected'] &&
-               data.createdAt is timestamp &&
-               data.hasCv is bool &&
-               data.hasLicense is bool &&
-               data.hasHrLetter is bool;
-      }
-
       allow read: if isAdmin();
-      allow create: if isValidApplication(request.resource.data) && 
-                      request.resource.data.status == 'pending' &&
-                      hasOnlyAllowedFields(['name', 'surname', 'email', 'phone', 'nationality', 'dob', 'crewType', 'status', 'createdAt', 'hasCv', 'hasLicense', 'hasHrLetter']);
-      allow update: if isAdmin() && isValidApplication(request.resource.data);
-      allow delete: if isAdmin();
+      allow create: if isValidApplication(request.resource.data);
+      allow update, delete: if isAdmin();
     }
 
+    // Partnerships collection
     match /partnerships/{partnershipId} {
-      function isValidPartnership(data) {
-        return data.companyName is string && data.companyName.size() > 0 && data.companyName.size() < 200 &&
-               data.contactName is string && data.contactName.size() > 0 && data.contactName.size() < 200 &&
-               isValidEmail(data.email) &&
-               data.phone is string &&
-               data.operationType is string &&
-               data.services is list &&
-               data.status in ['pending', 'contacted', 'partnered', 'archived'] &&
-               data.createdAt is timestamp;
-      }
-
       allow read: if isAdmin();
-      allow create: if isValidPartnership(request.resource.data) && 
-                      request.resource.data.status == 'pending' &&
-                      hasOnlyAllowedFields(['companyName', 'contactName', 'email', 'phone', 'operationType', 'fleetSize', 'message', 'services', 'status', 'createdAt']);
-      allow update: if isAdmin() && isValidPartnership(request.resource.data);
-      allow delete: if isAdmin();
-    }
-
-    // Default deny
-    match /{document=**} {
-      allow read, write: if false;
+      allow create: if isValidPartnership(request.resource.data);
+      allow update, delete: if isAdmin();
     }
   }
 }

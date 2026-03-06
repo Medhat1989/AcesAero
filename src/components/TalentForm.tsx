@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowLeft, Upload, CheckCircle2, Loader2, Plane } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { cn } from '../lib/utils';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { handleFirestoreError, OperationType } from '../firestoreUtils';
+import { collection, addDoc } from 'firebase/firestore';
+import { handleFirestoreError, OperationType } from '../utils/errorHandlers';
 
 export default function TalentForm() {
   const navigate = useNavigate();
@@ -14,6 +13,7 @@ export default function TalentForm() {
   const [formData, setFormData] = useState({
     name: '',
     surname: '',
+    email: '',
     nationality: '',
     dob: '',
     crewType: 'EASA Cabin Crew'
@@ -39,60 +39,25 @@ export default function TalentForm() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const data = new FormData();
-    Object.entries(formData).forEach(([key, value]) => data.append(key, value));
-    Object.entries(files).forEach(([key, value]) => {
-      if (value) data.append(key, value);
-    });
-
     try {
-      // 1. Save to Firestore for the Admin Dashboard
-      try {
-        await addDoc(collection(db, 'applications'), {
-          ...formData,
-          status: 'pending',
-          createdAt: serverTimestamp(),
-          hasCv: !!files.cv,
-          hasLicense: !!files.license,
-          hasHrLetter: !!files.hrLetter
-        });
-      } catch (error) {
-        handleFirestoreError(error, OperationType.CREATE, 'applications');
-      }
-
-      console.log("Submitting form data to email API:", formData);
-      console.log("Files to upload:", Object.keys(files).filter(k => files[k]));
-
-      const apiUrl = '/api/apply';
-      console.log(`Fetching: ${apiUrl} from origin: ${window.location.origin}`);
-
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        body: data,
+      // In a real app with file uploads, we'd use Firebase Storage.
+      // For this demo, we'll store the metadata and a placeholder for files.
+      await addDoc(collection(db, 'applications'), {
+        fullName: `${formData.name} ${formData.surname}`,
+        email: formData.email,
+        role: formData.crewType,
+        experience: 'N/A', // Could be added to form
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        ...formData,
+        hasCV: !!files.cv,
+        hasLicense: !!files.license,
+        hasHRLetter: !!files.hrLetter
       });
 
-      console.log("Server response status:", response.status);
-      
-      let result;
-      const contentType = response.headers.get("content-type");
-      if (contentType && contentType.includes("application/json")) {
-        result = await response.json();
-      } else {
-        const text = await response.text();
-        console.error("Server returned non-JSON response:", text);
-        result = { message: `Server error (${response.status}): ${text.slice(0, 100)}` };
-      }
-      
-      console.log("Server response body:", result);
-
-      if (response.ok) {
-        setIsSubmitted(true);
-      } else {
-        alert(result.message || 'Something went wrong. Please try again.');
-      }
+      setIsSubmitted(true);
     } catch (error) {
-      console.error('Error submitting form:', error);
-      alert('Network error. Please check your connection and try again.');
+      handleFirestoreError(error, OperationType.CREATE, 'applications');
     } finally {
       setIsSubmitting(false);
     }
@@ -163,6 +128,19 @@ export default function TalentForm() {
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-aviation-gold outline-none transition-colors text-base"
                 />
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-widest text-aviation-gold">Email Address</label>
+              <input 
+                required
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                type="email" 
+                placeholder="Enter your email"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-aviation-gold outline-none transition-colors text-base"
+              />
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
